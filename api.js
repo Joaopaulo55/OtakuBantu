@@ -61,7 +61,15 @@ class ApiService {
         return this.get(`/watch/${episodeId}`);
     }
     
-    // User Methods (these would need corresponding backend routes)
+    async getPopularAnimes() {
+        return this.get('/popular');
+    }
+    
+    async getRecentEpisodes() {
+        return this.get('/recent');
+    }
+    
+    // User Methods
     async login(email, password) {
         return this.post('/auth/login', { email, password });
     }

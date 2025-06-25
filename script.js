@@ -106,7 +106,7 @@ createApp({
             
             try {
                 const results = await apiService.searchAnimes(this.searchQuery);
-                this.searchResults = results;
+                this.searchResults = results.results || [];
                 this.openModal('search', `Resultados para: ${this.searchQuery}`);
             } catch (error) {
                 console.error('Search error:', error);
@@ -137,8 +137,18 @@ createApp({
         // Fetch hero slides
         async fetchHeroSlides() {
             try {
-                // In a real app, this would come from your API
-                // For now, we'll use the sample data
+                const { results } = await apiService.getPopularAnimes();
+                this.heroSlides = results.slice(0, 3).map(anime => ({
+                    title: anime.title,
+                    description: anime.description || 'Descrição não disponível',
+                    year: anime.releaseDate || 'N/A',
+                    rating: anime.rating || '8.0',
+                    episodes: anime.totalEpisodes || 'N/A',
+                    image: anime.image
+                }));
+            } catch (error) {
+                console.error('Error fetching hero slides:', error);
+                // Fallback data
                 this.heroSlides = [
                     {
                         title: 'Demon Slayer: Kimetsu no Yaiba',
@@ -165,17 +175,24 @@ createApp({
                         image: 'https://via.placeholder.com/800x450/1e1e1e/ffffff?text=Jujutsu+Kaisen'
                     }
                 ];
-            } catch (error) {
-                console.error('Error fetching hero slides:', error);
-                throw error;
             }
         },
         
         // Fetch latest episodes
         async fetchLatestEpisodes() {
             try {
-                // In a real app, this would come from your API
-                // For now, we'll use the sample data
+                const { results } = await apiService.getRecentEpisodes();
+                this.latestEpisodes = results.slice(0, 8).map(episode => ({
+                    title: episode.title,
+                    thumbnail: episode.image,
+                    episodeNumber: episode.episodeNumber,
+                    time: '24 min',
+                    date: 'Hoje',
+                    id: episode.id
+                }));
+            } catch (error) {
+                console.error('Error fetching latest episodes:', error);
+                // Fallback data
                 this.latestEpisodes = [
                     {
                         title: 'Demon Slayer: Kimetsu no Yaiba',
@@ -197,54 +214,26 @@ createApp({
                         episodeNumber: '24',
                         time: '24 min',
                         date: 'Ontem'
-                    },
-                    {
-                        title: 'My Hero Academia Season 6',
-                        thumbnail: 'https://via.placeholder.com/300x169/2196F3/ffffff?text=My+Hero+Academia',
-                        episodeNumber: '18',
-                        time: '23 min',
-                        date: 'Ontem'
-                    },
-                    {
-                        title: 'Chainsaw Man',
-                        thumbnail: 'https://via.placeholder.com/300x169/F44336/ffffff?text=Chainsaw+Man',
-                        episodeNumber: '12',
-                        time: '24 min',
-                        date: '2 dias atrás'
-                    },
-                    {
-                        title: 'Spy x Family',
-                        thumbnail: 'https://via.placeholder.com/300x169/4CAF50/ffffff?text=Spy+x+Family',
-                        episodeNumber: '25',
-                        time: '24 min',
-                        date: '2 dias atrás'
-                    },
-                    {
-                        title: 'Vinland Saga Season 2',
-                        thumbnail: 'https://via.placeholder.com/300x169/FFC107/333333?text=Vinland+Saga',
-                        episodeNumber: '10',
-                        time: '24 min',
-                        date: '3 dias atrás'
-                    },
-                    {
-                        title: 'Blue Lock',
-                        thumbnail: 'https://via.placeholder.com/300x169/2196F3/ffffff?text=Blue+Lock',
-                        episodeNumber: '22',
-                        time: '23 min',
-                        date: '3 dias atrás'
                     }
                 ];
-            } catch (error) {
-                console.error('Error fetching latest episodes:', error);
-                throw error;
             }
         },
         
         // Fetch popular animes
         async fetchPopularAnimes() {
             try {
-                // In a real app, this would come from your API
-                // For now, we'll use the sample data
+                const { results } = await apiService.getPopularAnimes();
+                this.popularAnimes = results.slice(0, 8).map(anime => ({
+                    title: anime.title,
+                    thumbnail: anime.image,
+                    year: anime.releaseDate || 'N/A',
+                    type: anime.type || 'TV',
+                    rating: anime.rating || '8.0',
+                    id: anime.id
+                }));
+            } catch (error) {
+                console.error('Error fetching popular animes:', error);
+                // Fallback data
                 this.popularAnimes = [
                     {
                         title: 'Demon Slayer: Kimetsu no Yaiba',
@@ -259,53 +248,8 @@ createApp({
                         year: '2013',
                         type: 'Série',
                         rating: '9.0'
-                    },
-                    {
-                        title: 'Jujutsu Kaisen',
-                        thumbnail: 'https://via.placeholder.com/300x169/1e1e1e/ffffff?text=Jujutsu+Kaisen',
-                        year: '2020',
-                        type: 'Série',
-                        rating: '8.8'
-                    },
-                    {
-                        title: 'My Hero Academia',
-                        thumbnail: 'https://via.placeholder.com/300x169/2196F3/ffffff?text=My+Hero+Academia',
-                        year: '2016',
-                        type: 'Série',
-                        rating: '8.4'
-                    },
-                    {
-                        title: 'Chainsaw Man',
-                        thumbnail: 'https://via.placeholder.com/300x169/F44336/ffffff?text=Chainsaw+Man',
-                        year: '2022',
-                        type: 'Série',
-                        rating: '8.9'
-                    },
-                    {
-                        title: 'Spy x Family',
-                        thumbnail: 'https://via.placeholder.com/300x169/4CAF50/ffffff?text=Spy+x+Family',
-                        year: '2022',
-                        type: 'Série',
-                        rating: '8.6'
-                    },
-                    {
-                        title: 'Vinland Saga',
-                        thumbnail: 'https://via.placeholder.com/300x169/FFC107/333333?text=Vinland+Saga',
-                        year: '2019',
-                        type: 'Série',
-                        rating: '8.7'
-                    },
-                    {
-                        title: 'Blue Lock',
-                        thumbnail: 'https://via.placeholder.com/300x169/2196F3/ffffff?text=Blue+Lock',
-                        year: '2022',
-                        type: 'Série',
-                        rating: '8.5'
                     }
                 ];
-            } catch (error) {
-                console.error('Error fetching popular animes:', error);
-                throw error;
             }
         },
         
@@ -314,8 +258,17 @@ createApp({
             this.loading = true;
             try {
                 const details = await apiService.getAnimeDetails(animeId);
-                this.selectedAnime = details;
-                this.openModal('anime', details.animeTitle, details);
+                this.selectedAnime = {
+                    title: details.title,
+                    thumbnail: details.image,
+                    rating: details.rating || '8.0',
+                    year: details.releaseDate || 'N/A',
+                    episodes: details.episodes?.length || details.totalEpisodes || 'N/A',
+                    genre: details.genres?.join(', ') || 'Ação, Aventura',
+                    synopsis: details.description || 'Sinopse não disponível.',
+                    id: details.id
+                };
+                this.openModal('anime', details.title, this.selectedAnime);
             } catch (error) {
                 console.error('Error fetching anime details:', error);
                 alert('Ocorreu um erro ao buscar detalhes do anime. Por favor, tente novamente.');
@@ -329,14 +282,45 @@ createApp({
             this.loading = true;
             try {
                 const videoData = await apiService.getEpisodeVideo(episodeId);
-                // In a real app, you would handle the video data here
-                console.log('Video data:', videoData);
-                alert('Redirecionando para o player de vídeo...');
+                if (videoData.sources && videoData.sources.length > 0) {
+                    // Find the best quality source
+                    const bestSource = videoData.sources.reduce((prev, current) => 
+                        (prev.quality > current.quality) ? prev : current
+                    );
+                    
+                    // Open in new tab
+                    window.open(bestSource.url, '_blank');
+                    
+                    // Alternatively, you could implement an embedded player here
+                } else {
+                    throw new Error('Nenhuma fonte de vídeo disponível');
+                }
             } catch (error) {
                 console.error('Error fetching episode video:', error);
                 alert('Ocorreu um erro ao carregar o episódio. Por favor, tente novamente.');
             } finally {
                 this.loading = false;
+            }
+        },
+        
+        // Download episode
+        async downloadEpisode(episodeId, episodeTitle) {
+            try {
+                const videoData = await apiService.getEpisodeVideo(episodeId);
+                if (videoData.sources && videoData.sources.length > 0) {
+                    const source = videoData.sources.find(s => s.quality === '720p') || videoData.sources[0];
+                    const a = document.createElement('a');
+                    a.href = source.url;
+                    a.download = `${episodeTitle.replace(/[^a-z0-9]/gi, '_')}.mp4`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                } else {
+                    throw new Error('Nenhuma fonte de vídeo disponível para download');
+                }
+            } catch (error) {
+                console.error('Download error:', error);
+                alert('Erro ao iniciar download. Por favor, tente assistir online.');
             }
         },
         
@@ -357,14 +341,7 @@ createApp({
         
         // View anime details
         viewAnimeDetails(anime) {
-            // In a real app, you would use the anime ID to fetch details
-            // For now, we'll just use the sample data
-            this.selectedAnime = {
-                ...anime,
-                synopsis: 'Esta é uma sinopse de exemplo para o anime. Em uma aplicação real, isso viria da API.',
-                genre: anime.type || 'Ação, Aventura'
-            };
-            this.openModal('anime', anime.title, this.selectedAnime);
+            this.getAnimeDetails(anime.id);
         }
     }
 }).mount('#app');
