@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OtakuBantu - Assista Animes Online</title>
+    <meta name="description" content="Assista animes online gratuitamente em HD. OtakuBantu tem o maior acervo de animes legendados e dublados.">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="responsive.css">
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.2.47/dist/vue.global.min.js"></script>
+</head>
+<body>
+    <div id="app">
+        <!-- Header/Navbar -->
+        <header class="header">
+            <div class="container">
+                <div class="logo">
+                    <a href="index.html">Otaku<span>Bantu</span></a>
+                </div>
+                <nav class="navbar">
+                    <ul>
+                        <li><a href="#home" class="active">Início</a></li>
+                        <li><a href="#animes">Animes</a></li>
+                        <li><a href="#top">Top Animes</a></li>
+                        <li><a href="#generos">Gêneros</a></li>
+                        <li><a href="#sobre">Sobre</a></li>
+                    </ul>
+                </nav>
+                <div class="search-box">
+                    <input type="text" placeholder="Buscar anime..." v-model="searchQuery" @keyup.enter="searchAnime">
+                    <button @click="searchAnime"><i class="fas fa-search"></i></button>
+                </div>
+                <div class="user-actions">
+                    <a href="#login" class="login-btn">Entrar</a>
+                    <a href="#register" class="register-btn">Cadastrar</a>
+                </div>
+                <div class="mobile-menu-btn" @click="toggleMobileMenu">
+                    <i class="fas fa-bars"></i>
+                </div>
+            </div>
+        </header>
+
+        <!-- Mobile Menu -->
+        <div class="mobile-menu" :class="{ 'active': mobileMenuOpen }">
+            <div class="mobile-menu-header">
+                <div class="logo">
+                    <a href="index.html">Otaku<span>Bantu</span></a>
+                </div>
+                <div class="close-btn" @click="toggleMobileMenu">
+                    <i class="fas fa-times"></i>
+                </div>
+            </div>
+            <nav class="mobile-nav">
+                <ul>
+                    <li><a href="#home" @click="toggleMobileMenu">Início</a></li>
+                    <li><a href="#animes" @click="toggleMobileMenu">Animes</a></li>
+                    <li><a href="#top" @click="toggleMobileMenu">Top Animes</a></li>
+                    <li><a href="#generos" @click="toggleMobileMenu">Gêneros</a></li>
+                    <li><a href="#sobre" @click="toggleMobileMenu">Sobre</a></li>
+                    <li><a href="#login" @click="toggleMobileMenu">Entrar</a></li>
+                    <li><a href="#register" @click="toggleMobileMenu">Cadastrar</a></li>
+                </ul>
+            </nav>
+            <div class="mobile-search">
+                <input type="text" placeholder="Buscar anime..." v-model="searchQuery" @keyup.enter="searchAnime">
+                <button @click="searchAnime"><i class="fas fa-search"></i></button>
+            </div>
+        </div>
+
+        <!-- Hero Section -->
+        <section class="hero" id="home">
+            <div class="hero-slider">
+                <div class="slide" v-for="(slide, index) in heroSlides" :key="index" :class="{ 'active': currentSlide === index }">
+                    <div class="slide-content">
+                        <h1>{{ slide.title }}</h1>
+                        <p>{{ slide.description }}</p>
+                        <div class="slide-meta">
+                            <span class="year">{{ slide.year }}</span>
+                            <span class="rating"><i class="fas fa-star"></i> {{ slide.rating }}</span>
+                            <span class="episodes">{{ slide.episodes }} episódios</span>
+                        </div>
+                        <div class="slide-buttons">
+                            <a href="#" class="btn-watch"><i class="fas fa-play"></i> Assistir Agora</a>
+                            <a href="#" class="btn-details"><i class="fas fa-info-circle"></i> Detalhes</a>
+                        </div>
+                    </div>
+                    <div class="slide-image">
+                        <img :src="slide.image" :alt="slide.title">
+                    </div>
+                </div>
+                <div class="slider-controls">
+                    <button class="prev" @click="prevSlide"><i class="fas fa-chevron-left"></i></button>
+                    <button class="next" @click="nextSlide"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Latest Episodes -->
+        <section class="section latest-episodes" id="animes">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Últimos Episódios</h2>
+                    <a href="#" class="view-all">Ver Todos</a>
+                </div>
+                <div class="episodes-grid">
+                    <div class="episode-card" v-for="(episode, index) in latestEpisodes" :key="index">
+                        <div class="episode-thumbnail">
+                            <img :src="episode.thumbnail" :alt="episode.title">
+                            <div class="episode-number">Ep {{ episode.episodeNumber }}</div>
+                            <div class="overlay">
+                                <a href="#" class="play-btn"><i class="fas fa-play"></i></a>
+                            </div>
+                        </div>
+                        <div class="episode-info">
+                            <h3>{{ episode.title }}</h3>
+                            <div class="meta">
+                                <span><i class="fas fa-clock"></i> {{ episode.time }}</span>
+                                <span><i class="fas fa-calendar-alt"></i> {{ episode.date }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Popular Animes -->
+        <section class="section popular-animes" id="top">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Animes Populares</h2>
+                    <a href="#" class="view-all">Ver Todos</a>
+                </div>
+                <div class="animes-grid">
+                    <div class="anime-card" v-for="(anime, index) in popularAnimes" :key="index">
+                        <div class="anime-thumbnail">
+                            <img :src="anime.thumbnail" :alt="anime.title">
+                            <div class="overlay">
+                                <a href="#" class="play-btn"><i class="fas fa-play"></i></a>
+                                <div class="anime-rating"><i class="fas fa-star"></i> {{ anime.rating }}</div>
+                            </div>
+                        </div>
+                        <div class="anime-info">
+                            <h3>{{ anime.title }}</h3>
+                            <div class="meta">
+                                <span>{{ anime.year }}</span>
+                                <span>{{ anime.type }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Genres Section -->
+        <section class="section genres-section" id="generos">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Gêneros</h2>
+                </div>
+                <div class="genres-grid">
+                    <a href="#" class="genre-card" v-for="(genre, index) in genres" :key="index">
+                        <div class="genre-icon">
+                            <img :src="genre.icon" :alt="genre.name">
+                        </div>
+                        <h3>{{ genre.name }}</h3>
+                        <p>{{ genre.count }} animes</p>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Newsletter -->
+        <section class="newsletter">
+            <div class="container">
+                <div class="newsletter-content">
+                    <h2>Assine nossa Newsletter</h2>
+                    <p>Receba as últimas atualizações sobre novos episódios e animes diretamente no seu e-mail.</p>
+                    <form @submit.prevent="subscribeNewsletter">
+                        <input type="email" placeholder="Seu e-mail" v-model="newsletterEmail" required>
+                        <button type="submit" class="btn-subscribe">Assinar</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="container">
+                <div class="footer-content">
+                    <div class="footer-section about">
+                        <div class="logo">
+                            <a href="index.html">Otaku<span>Bantu</span></a>
+                        </div>
+                        <p>OtakuBantu é o melhor lugar para assistir animes online gratuitamente em HD. Oferecemos uma vasta coleção de animes legendados e dublados.</p>
+                        <div class="social-links">
+                            <a href="#"><i class="fab fa-facebook-f"></i></a>
+                            <a href="#"><i class="fab fa-twitter"></i></a>
+                            <a href="#"><i class="fab fa-instagram"></i></a>
+                            <a href="#"><i class="fab fa-discord"></i></a>
+                        </div>
+                    </div>
+                    <div class="footer-section links">
+                        <h3>Links Rápidos</h3>
+                        <ul>
+                            <li><a href="#home">Início</a></li>
+                            <li><a href="#animes">Animes</a></li>
+                            <li><a href="#top">Top Animes</a></li>
+                            <li><a href="#generos">Gêneros</a></li>
+                            <li><a href="#sobre">Sobre</a></li>
+                            <li><a href="#contato">Contato</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-section genres">
+                        <h3>Gêneros</h3>
+                        <ul>
+                            <li v-for="(genre, index) in genres.slice(0, 6)" :key="index"><a href="#">{{ genre.name }}</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="footer-bottom">
+                    
+                    <p>&copy; 2025 OtakuBantu. Todos os direitos reservados.</p>
+                    <div class="footer-links">
+                        <a href="#">Termos de Serviço</a>
+                        <a href="#">Política de Privacidade</a>
+                        <a href="#">DMCA</a>
+                        
+                        
+                    </div>
+                    
+                    <div class="disclaimer">
+                    <p><strong>Aviso Legal:</strong> Este site não hospeda nenhum vídeo em seu servidor. Todo conteúdo é provido de servidores de terceiros  não afiliados.  </p>
+                      </div>
+                    
+                </div>
+                
+                
+                
+            </div>
+            
+            
+            
+        </footer>
+
+        <!-- Modal -->
+        <div class="modal" :class="{ 'active': modalOpen }">
+            <div class="modal-overlay" @click="closeModal"></div>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>{{ modalTitle }}</h3>
+                    <button class="modal-close" @click="closeModal"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="modal-body">
+                    <div v-if="modalType === 'search'">
+    <div class="search-results">
+        <div v-if="searchResults.length === 0" class="no-results">
+            Nenhum resultado encontrado para "{{ searchQuery }}"
+        </div>
+        <div v-else class="results-grid">
+            <div v-for="(result, index) in searchResults" :key="index" class="result-item" @click="getAnimeDetails(result.animeId)">
+                <img :src="result.animeImg" :alt="result.animeTitle" class="result-thumbnail">
+                <h3>{{ result.animeTitle }}</h3>
+                <p>{{ result.releasedDate || 'Data não disponível' }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+                    <p v-if="modalType === 'login'">Conteúdo do formulário de login aqui...</p>
+                    <p v-if="modalType === 'register'">Conteúdo do formulário de registro aqui...</p>
+                    <div v-if="modalType === 'anime'">
+                        <div class="anime-details">
+                            <div class="anime-poster">
+                                <img :src="selectedAnime.thumbnail" :alt="selectedAnime.title">
+                            </div>
+                            <div class="anime-info">
+                                <h2>{{ selectedAnime.title }}</h2>
+                                <div class="meta">
+                                    <span><i class="fas fa-star"></i> {{ selectedAnime.rating }}</span>
+                                    <span><i class="fas fa-calendar-alt"></i> {{ selectedAnime.year }}</span>
+                                    <span><i class="fas fa-film"></i> {{ selectedAnime.episodes }} episódios</span>
+                                    <span><i class="fas fa-tag"></i> {{ selectedAnime.genre }}</span>
+                                </div>
+                                <p class="synopsis">{{ selectedAnime.synopsis }}</p>
+                                <div class="actions">
+                                    <a href="#" class="btn-watch"><i class="fas fa-play"></i> Assistir Agora</a>
+                                    <a href="#" class="btn-favorite"><i class="fas fa-heart"></i> Favoritar</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Spinner -->
+        <div class="loading-spinner" v-if="loading">
+            <div class="spinner"></div>
+        </div>
+    </div>
+
+    <script src="api.js"></script>
+    <script src="components.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
