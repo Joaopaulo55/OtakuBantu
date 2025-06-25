@@ -1,3 +1,38 @@
+
+
+const API_BASE = 'https://otakubantubackend.onrender.com'; // substitua pela URL do seu backend real
+
+const apiService = {
+  searchAnimes: (query, page = 1) =>
+    fetch(`${API_BASE}/search?q=${encodeURIComponent(query)}&page=${page}`).then(res => res.json()),
+
+  getPopularAnimes: () =>
+    fetch(`${API_BASE}/popular`).then(res => res.json()),
+
+  getRecentEpisodes: () =>
+    fetch(`${API_BASE}/recent`).then(res => res.json()),
+
+  getAnimeDetails: (id) =>
+    fetch(`${API_BASE}/anime/${id}`).then(res => res.json()),
+
+  getEpisodeVideo: (id) =>
+    fetch(`${API_BASE}/watch/${id}`).then(res => res.json()),
+
+  subscribeNewsletter: (email) =>
+    fetch(`${API_BASE}/newsletter`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    }).then(res => res.json()),
+
+  getAnimesByGenre: (genre, page = 1) =>
+    fetch(`${API_BASE}/genre/${genre}?page=${page}`).then(res => res.json())
+};
+
+
+
+
+
 // Main Vue App
 const { createApp } = Vue;
 
