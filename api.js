@@ -1,7 +1,7 @@
 // API Service - Updated to work with your backend
 class ApiService {
     constructor() {
-        this.baseUrl = 'https://your-render-app-name.onrender.com/api'; // Update with your Render URL
+        this.baseUrl = 'https://otakubantubackend.onrender.com'; // Update with your Render URL
     }
     
     async get(endpoint, params = {}) {
