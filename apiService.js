@@ -1,6 +1,6 @@
 // apiService.js
 
-const API_BASE = 'https://otakubantubackend.onrender.com'; // Altere se estiver em localhost ou domínio próprio
+const API_BASE = 'https://consumet-api-fawn.vercel.app/anime/gogoanime'; // Altere se estiver em localhost ou domínio próprio
 
 const apiService = {
   // Buscar animes por nome (com suporte à paginação)
