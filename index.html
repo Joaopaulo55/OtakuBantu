@@ -2,117 +2,96 @@
 <html lang="pt">
 <head>
   <meta charset="UTF-8">
-  <title>OtakuBantu - Jikan API</title>
-  <style>
-    body {
-      background: #0d1117;
-      color: #c9d1d9;
-      font-family: Arial, sans-serif;
-      padding: 20px;
-    }
-    input, button {
-      padding: 10px;
-      border-radius: 5px;
-      border: none;
-      margin-right: 10px;
-    }
-    .anime {
-      background: #161b22;
-      padding: 15px;
-      margin: 10px 0;
-      border-radius: 10px;
-    }
-    img {
-      width: 120px;
-      border-radius: 5px;
-    }
-    a {
-      color: #58a6ff;
-      text-decoration: none;
-    }
-  </style>
+  <title>OtakuBantu - Animes Educativos</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
+<body class="bg-gray-900 text-white p-6">
 
-  <h1>OtakuBantu com Jikan API</h1>
+  <h1 class="text-3xl font-bold mb-4">OtakuBantu 🎌</h1>
 
-  <h2>🔍 Buscar anime por nome:</h2>
-  <input type="text" id="searchInput" placeholder="Ex: Naruto, Bleach, etc.">
-  <button onclick="buscarAnime()">Buscar</button>
+  <div class="mb-6">
+    <input id="search" type="text" placeholder="Buscar anime por nome..." class="px-4 py-2 text-black rounded w-1/2" />
+    <button onclick="buscarAnime()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">Buscar</button>
+  </div>
 
-  <h2>🔥 Animes Populares:</h2>
-  <div id="popular"></div>
+  <div class="mb-6">
+    <label class="block mb-2">Filtrar por Gênero:</label>
+    <select id="generoSelect" class="text-black px-2 py-1 rounded" onchange="filtrarGenero()">
+      <option value="">Todos</option>
+      <option value="1">Ação</option>
+      <option value="4">Comédia</option>
+      <option value="8">Drama</option>
+      <option value="10">Fantasia</option>
+      <option value="22">Romance</option>
+      <option value="24">Sci-Fi</option>
+      <option value="37">Psicológico</option>
+    </select>
+  </div>
 
-  <h2>🎯 Resultado da Busca:</h2>
-  <div id="busca"></div>
+  <h2 class="text-2xl font-semibold mb-2">✨ Animes Populares</h2>
+  <div id="popular" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-12"></div>
+
+  <h2 class="text-2xl font-semibold mb-2">📺 Resultado da Busca</h2>
+  <div id="resultado" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-12"></div>
 
   <script>
-    const API_JIKAN = "https://api.jikan.moe/v4";
+    const popularContainer = document.getElementById("popular");
+    const resultadoContainer = document.getElementById("resultado");
 
-    // Buscar animes populares
-    function carregarPopulares() {
-      fetch(`${API_JIKAN}/top/anime`)
-        .then(res => res.json())
-        .then(json => {
-          const container = document.getElementById("popular");
-          container.innerHTML = "";
-          json.data.forEach(anime => {
-            const div = document.createElement("div");
-            div.className = "anime";
-            div.innerHTML = `
-              <strong>${anime.title}</strong><br>
-              <img src="${anime.images.jpg.image_url}" alt="imagem do anime"><br>
-              ⭐ Nota: ${anime.score || 'N/A'}<br>
-              🗓️ Episódios: ${anime.episodes || 'Desconhecido'}<br>
-              <p>${anime.synopsis?.substring(0, 180)}...</p>
-              <a href="${anime.url}" target="_blank">Ver no MyAnimeList</a>
-            `;
-            container.appendChild(div);
-          });
-        })
-        .catch(err => {
-          document.getElementById("popular").innerText = "Erro ao carregar populares.";
-          console.error(err);
-        });
+    async function carregarPopulares() {
+      const res = await fetch("https://api.jikan.moe/v4/top/anime");
+      const data = await res.json();
+      mostrarAnimes(data.data, popularContainer);
     }
 
-    // Buscar por nome
-    function buscarAnime() {
-      const nome = document.getElementById("searchInput").value.trim();
-      if (!nome) return alert("Digite o nome do anime");
-
-      fetch(`${API_JIKAN}/anime?q=${encodeURIComponent(nome)}`)
-        .then(res => res.json())
-        .then(json => {
-          const container = document.getElementById("busca");
-          container.innerHTML = "";
-          if (json.data.length === 0) {
-            container.innerText = "Nenhum anime encontrado.";
-            return;
-          }
-          json.data.forEach(anime => {
-            const div = document.createElement("div");
-            div.className = "anime";
-            div.innerHTML = `
-              <strong>${anime.title}</strong><br>
-              <img src="${anime.images.jpg.image_url}" alt="imagem do anime"><br>
-              ⭐ Nota: ${anime.score || 'N/A'}<br>
-              🗓️ Episódios: ${anime.episodes || 'Desconhecido'}<br>
-              <p>${anime.synopsis?.substring(0, 180)}...</p>
-              <a href="${anime.url}" target="_blank">Ver no MyAnimeList</a>
-            `;
-            container.appendChild(div);
-          });
-        })
-        .catch(err => {
-          document.getElementById("busca").innerText = "Erro ao buscar anime.";
-          console.error(err);
-        });
+    async function buscarAnime() {
+      const query = document.getElementById("search").value.trim();
+      if (!query) return;
+      const res = await fetch(`https://api.jikan.moe/v4/anime?q=${encodeURIComponent(query)}&order_by=popularity`);
+      const data = await res.json();
+      resultadoContainer.innerHTML = "";
+      mostrarAnimes(data.data, resultadoContainer);
     }
 
-    // Iniciar com populares
+    async function filtrarGenero() {
+      const genero = document.getElementById("generoSelect").value;
+      if (!genero) return carregarPopulares();
+      const res = await fetch(`https://api.jikan.moe/v4/anime?genres=${genero}`);
+      const data = await res.json();
+      popularContainer.innerHTML = "";
+      mostrarAnimes(data.data, popularContainer);
+    }
+
+    function mostrarAnimes(animes, container) {
+      container.innerHTML = "";
+      animes.forEach(anime => {
+        const trailer = anime.trailer?.embed_url
+          ? `<iframe src="${anime.trailer.embed_url}" class="w-full h-52 mt-2 rounded" allowfullscreen></iframe>`
+          : `<p class="mt-2 text-sm text-gray-400">Trailer indisponível.</p>`;
+
+        const episodiosLink = anime.episodes ? `https://myanimelist.net/anime/${anime.mal_id}/episode` : "#";
+        const externo = `
+          <div class="mt-2 space-x-2 text-sm">
+            <a href="https://myanimelist.net/anime/${anime.mal_id}" target="_blank" class="underline text-blue-300">MAL</a>
+            <a href="https://zoro.to/search?keyword=${anime.title}" target="_blank" class="underline text-green-300">Zoro.to</a>
+            <a href="https://aniwatch.to/search?keyword=${anime.title}" target="_blank" class="underline text-purple-300">Aniwatch.to</a>
+          </div>
+        `;
+
+        container.innerHTML += `
+          <div class="bg-gray-800 p-4 rounded shadow">
+            <img src="${anime.images.jpg.image_url}" class="w-full h-60 object-cover rounded" />
+            <h3 class="mt-2 font-bold text-lg">${anime.title}</h3>
+            <p class="text-sm mt-1">${anime.synopsis?.slice(0, 200) || "Sem sinopse disponível"}...</p>
+            <p class="text-sm mt-1">Episódios: ${anime.episodes || "?"}</p>
+            ${trailer}
+            ${externo}
+          </div>
+        `;
+      });
+    }
+
     carregarPopulares();
   </script>
-
 </body>
 </html>
