@@ -2,83 +2,44 @@
 <html lang="pt">
 <head>
   <meta charset="UTF-8">
-  <title>OtakuBantu - Teste de API</title>
+  <title>Consumet API Test</title>
   <style>
     body {
-      font-family: sans-serif;
+      font-family: Arial, sans-serif;
+      background: #0d1117;
+      color: #c9d1d9;
       padding: 20px;
     }
-    input, button {
-      font-size: 1rem;
-      padding: 5px 10px;
-    }
-    img {
-      border-radius: 10px;
-      box-shadow: 0 0 5px #ccc;
-    }
-    .anime {
-      margin-bottom: 20px;
+    .box {
+      background: #161b22;
+      padding: 20px;
+      border-radius: 8px;
+      margin-top: 20px;
+      white-space: pre-wrap;
     }
   </style>
 </head>
 <body>
-  <h1>Buscar Anime</h1>
-  <input type="text" id="query" placeholder="Digite o nome do anime">
-  <button onclick="buscar()">Buscar</button>
-  <div id="resultados"></div>
+
+  <h1>Teste de API do Consumet</h1>
+  <div id="output" class="box">Carregando...</div>
 
   <script>
-    const API_URL = 'https://otakubantubackend.onrender.com';
+    const output = document.getElementById("output");
 
-    async function buscar() {
-      const q = document.getElementById('query').value.trim();
-      const resultadosDiv = document.getElementById('resultados');
-      resultadosDiv.innerHTML = '';
-
-      if (!q) {
-        resultadosDiv.innerHTML = '<p>Por favor, digite algo.</p>';
-        return;
-      }
-
-      try {
-        const res = await fetch(`${API_URL}/search?q=${encodeURIComponent(q)}`);
-        const json = await res.json();
-
-        if (json.results && json.results.length > 0) {
-          json.results.forEach(anime => {
-            const div = document.createElement('div');
-            div.className = 'anime';
-            div.innerHTML = `
-              <strong>${anime.title || anime.name}</strong><br>
-              <img src="${anime.image || anime.thumb}" width="150"><br><br>
-            `;
-            resultadosDiv.appendChild(div);
-          });
-        } else {
-          resultadosDiv.innerHTML = '<p>Nenhum resultado na API. Tentando fallback...</p>';
-          const fallback = await fetch(`${API_URL}/fallback-animefire?q=${encodeURIComponent(q)}`);
-          const fbJson = await fallback.json();
-
-          if (fbJson.results && fbJson.results.length > 0) {
-            fbJson.results.forEach(anime => {
-              const div = document.createElement('div');
-              div.className = 'anime';
-              div.innerHTML = `
-                <strong>${anime.name}</strong><br>
-                <img src="${anime.thumb}" width="150"><br>
-                <a href="${anime.link}" target="_blank">Ver no AnimeFire</a><br><br>
-              `;
-              resultadosDiv.appendChild(div);
-            });
-          } else {
-            resultadosDiv.innerHTML = '<p>Nada encontrado nem no fallback.</p>';
-          }
-        }
-      } catch (error) {
-        console.error(error);
-        resultadosDiv.innerHTML = '<p>Erro ao buscar. Tente novamente mais tarde.</p>';
-      }
-    }
+    fetch("https://consumet-api-fawn.vercel.app/anime/gogoanime")
+      .then(res => {
+        if (!res.ok) throw new Error("Erro ao conectar");
+        return res.json();
+      })
+      .then(data => {
+        output.innerText = "JP\n\n" + JSON.stringify(data, null, 2);
+      })
+      .catch(err => {
+        output.innerText = "Epha não é hoje";
+        console.error(err);
+      });
   </script>
+
 </body>
 </html>
