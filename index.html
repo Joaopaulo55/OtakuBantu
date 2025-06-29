@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
   <meta charset="UTF-8">
-  <title>OtakuBantu - Anime Educacional</title>
+  <title>OtakuBantu - Jikan API</title>
   <style>
     body {
       background: #0d1117;
@@ -17,116 +17,101 @@
       margin-right: 10px;
     }
     .anime {
-      margin: 10px 0;
-      padding: 10px;
       background: #161b22;
-      border-radius: 8px;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 10px;
     }
-    iframe {
-      width: 100%;
-      height: 360px;
-      border: none;
-      margin-top: 10px;
+    img {
+      width: 120px;
+      border-radius: 5px;
+    }
+    a {
+      color: #58a6ff;
+      text-decoration: none;
     }
   </style>
 </head>
 <body>
 
-  <h1>OtakuBantu</h1>
-  <div id="status">Verificando API...</div>
-
-  <br><hr><br>
+  <h1>OtakuBantu com Jikan API</h1>
 
   <h2>🔍 Buscar anime por nome:</h2>
-  <input type="text" id="searchInput" placeholder="Digite o nome do anime">
+  <input type="text" id="searchInput" placeholder="Ex: Naruto, Bleach, etc.">
   <button onclick="buscarAnime()">Buscar</button>
 
   <h2>🔥 Animes Populares:</h2>
   <div id="popular"></div>
 
-  <h2>📺 Episódio Selecionado:</h2>
-  <div id="player"></div>
+  <h2>🎯 Resultado da Busca:</h2>
+  <div id="busca"></div>
 
   <script>
-    const API_BASE = "https://consumet-api-fawn.vercel.app/anime/gogoanime";
+    const API_JIKAN = "https://api.jikan.moe/v4";
 
-    // Verifica a API
-    fetch(API_BASE)
-      .then(res => res.json())
-      .then(data => {
-        document.getElementById("status").innerText = "JP\n\n" + JSON.stringify(data, null, 2);
-        carregarPopulares();
-      })
-      .catch(() => {
-        document.getElementById("status").innerText = "Epha não é hoje";
-      });
+    // Buscar animes populares
+    function carregarPopulares() {
+      fetch(`${API_JIKAN}/top/anime`)
+        .then(res => res.json())
+        .then(json => {
+          const container = document.getElementById("popular");
+          container.innerHTML = "";
+          json.data.forEach(anime => {
+            const div = document.createElement("div");
+            div.className = "anime";
+            div.innerHTML = `
+              <strong>${anime.title}</strong><br>
+              <img src="${anime.images.jpg.image_url}" alt="imagem do anime"><br>
+              ⭐ Nota: ${anime.score || 'N/A'}<br>
+              🗓️ Episódios: ${anime.episodes || 'Desconhecido'}<br>
+              <p>${anime.synopsis?.substring(0, 180)}...</p>
+              <a href="${anime.url}" target="_blank">Ver no MyAnimeList</a>
+            `;
+            container.appendChild(div);
+          });
+        })
+        .catch(err => {
+          document.getElementById("popular").innerText = "Erro ao carregar populares.";
+          console.error(err);
+        });
+    }
 
-    // Buscar anime por nome
+    // Buscar por nome
     function buscarAnime() {
       const nome = document.getElementById("searchInput").value.trim();
-      if (!nome) return alert("Digite um nome");
+      if (!nome) return alert("Digite o nome do anime");
 
-      fetch(`${API_BASE}/${encodeURIComponent(nome)}`)
+      fetch(`${API_JIKAN}/anime?q=${encodeURIComponent(nome)}`)
         .then(res => res.json())
-        .then(animes => {
-          const container = document.getElementById("popular");
-          container.innerHTML = "<h3>Resultados da busca:</h3>";
-          animes.results.forEach(anime => {
-            const div = document.createElement("div");
-            div.className = "anime";
-            div.innerHTML = `
-              <strong>${anime.title}</strong><br>
-              <img src="${anime.image}" width="120"><br>
-              <button onclick="assistirAnime('${anime.episodes[0]?.id}')">Assistir 1º Episódio</button>
-            `;
-            container.appendChild(div);
-          });
-        })
-        .catch(err => {
-          alert("Erro ao buscar anime");
-          console.error(err);
-        });
-    }
-
-    // Carregar populares
-    function carregarPopulares() {
-      fetch(`${API_BASE}/popular`)
-        .then(res => res.json())
-        .then(animes => {
-          const container = document.getElementById("popular");
-          container.innerHTML = "<h3>Mais populares:</h3>";
-          animes.results.forEach(anime => {
-            const div = document.createElement("div");
-            div.className = "anime";
-            div.innerHTML = `
-              <strong>${anime.title}</strong><br>
-              <img src="${anime.image}" width="120"><br>
-              <button onclick="assistirAnime('${anime.episodes[0]?.id}')">Assistir 1º Episódio</button>
-            `;
-            container.appendChild(div);
-          });
-        })
-        .catch(console.error);
-    }
-
-    // Assistir episódio
-    function assistirAnime(episodeId) {
-      if (!episodeId) return alert("Episódio não disponível");
-      fetch(`${API_BASE}/watch/${episodeId}`)
-        .then(res => res.json())
-        .then(data => {
-          const videoUrl = data.sources.find(src => src.quality === "default" || src.quality === "720p")?.url || data.sources[0]?.url;
-          if (!videoUrl) {
-            document.getElementById("player").innerText = "Vídeo não disponível.";
+        .then(json => {
+          const container = document.getElementById("busca");
+          container.innerHTML = "";
+          if (json.data.length === 0) {
+            container.innerText = "Nenhum anime encontrado.";
             return;
           }
-          document.getElementById("player").innerHTML = `<iframe src="${videoUrl}" allowfullscreen></iframe>`;
+          json.data.forEach(anime => {
+            const div = document.createElement("div");
+            div.className = "anime";
+            div.innerHTML = `
+              <strong>${anime.title}</strong><br>
+              <img src="${anime.images.jpg.image_url}" alt="imagem do anime"><br>
+              ⭐ Nota: ${anime.score || 'N/A'}<br>
+              🗓️ Episódios: ${anime.episodes || 'Desconhecido'}<br>
+              <p>${anime.synopsis?.substring(0, 180)}...</p>
+              <a href="${anime.url}" target="_blank">Ver no MyAnimeList</a>
+            `;
+            container.appendChild(div);
+          });
         })
         .catch(err => {
-          document.getElementById("player").innerText = "Erro ao carregar episódio.";
+          document.getElementById("busca").innerText = "Erro ao buscar anime.";
           console.error(err);
         });
     }
+
+    // Iniciar com populares
+    carregarPopulares();
   </script>
 
 </body>
