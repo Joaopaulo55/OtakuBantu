@@ -7,27 +7,30 @@
 </head>
 <body class="bg-gray-900 text-white p-6">
 
-  <h1 class="text-3xl font-bold mb-4 text-center">OtakuBantu 🔥</h1>
+  <h1 class="text-3xl font-bold mb-4 text-center">🔥 OtakuBantu</h1>
 
-  <!-- Busca -->
+  <!-- Campo de busca -->
   <div class="mb-6 flex justify-center gap-4">
     <input id="searchInput" type="text" placeholder="Buscar anime..." class="text-black px-4 py-2 rounded w-1/2" />
     <button onclick="buscarAnime()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">Buscar</button>
   </div>
 
-  <!-- Populares -->
-  <h2 class="text-2xl font-semibold mb-4">Mais Populares</h2>
-  <div id="populares" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-12"></div>
+  <!-- Lista de populares -->
+  <h2 class="text-2xl font-semibold mb-4">Populares</h2>
+  <div id="populares" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10"></div>
 
-  <!-- Resultados da busca -->
+  <!-- Resultados de busca -->
   <h2 class="text-2xl font-semibold mb-4">Resultados da Busca</h2>
-  <div id="resultados" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-12"></div>
+  <div id="resultados" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10"></div>
+
+  <!-- Episódios -->
+  <div id="episodios" class="mb-10"></div>
 
   <!-- Player -->
   <div id="player" class="mb-12"></div>
 
   <script>
-    const API = 'https://otakubantubackend.onrender.com';
+    const API = "https://otakubantubackend.onrender.com";
 
     async function carregarPopulares() {
       const res = await fetch(`${API}/animefire/populares`);
@@ -40,12 +43,12 @@
     }
 
     function criarCard(anime) {
-      const slug = anime.url.split('/').pop();
+      const slug = anime.url.split('/').pop().replace("-todos-os-episodios", "");
       return `
         <div class="bg-gray-800 rounded p-4">
           <img src="${anime.thumb}" alt="${anime.title}" class="w-full h-60 object-cover rounded mb-2">
           <h3 class="text-lg font-bold">${anime.title}</h3>
-          <button onclick="assistirAnime('${slug}')" class="mt-2 bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-sm">Assistir</button>
+          <button onclick="verEpisodios('${slug}')" class="mt-2 bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-sm">Ver episódios</button>
         </div>
       `;
     }
@@ -58,36 +61,40 @@
       const container = document.getElementById("resultados");
       container.innerHTML = "";
       data.resultados.forEach(anime => {
-        const slug = anime.url.split('/').pop();
+        const slug = anime.url.split('/').pop().replace("-todos-os-episodios", "");
         container.innerHTML += criarCard(anime);
       });
     }
 
-    async function assistirAnime(slug) {
+    async function verEpisodios(slug) {
       const res = await fetch(`${API}/animefire/assistir/${slug}`);
       const data = await res.json();
-
-      document.getElementById("player").innerHTML = `
-        <h2 class="text-2xl font-bold mb-2">Player do Anime</h2>
-        <iframe src="${data.player}" class="w-full h-96 mb-4 rounded" allowfullscreen></iframe>
-        <h3 class="text-xl font-semibold mb-2">Episódios</h3>
-        <ul class="space-y-1">
-          ${data.episodios.map(ep => `
-            <li>
-              <a href="#" onclick="abrirEpisodio('${ep.epUrl}'); return false;" class="text-blue-400 underline">${ep.epTitle}</a>
-            </li>
-          `).join('')}
-        </ul>
-      `;
+      const container = document.getElementById("episodios");
+      container.innerHTML = `<h2 class="text-2xl font-bold mb-2">Episódios</h2>`;
+      data.episodios.forEach(ep => {
+        container.innerHTML += `
+          <button onclick="verPlayer('${slug}', '${ep.epNum}')" class="bg-purple-600 hover:bg-purple-700 px-3 py-1 rounded text-sm m-1">
+            ${ep.epTitle}
+          </button>
+        `;
+      });
+      document.getElementById("player").innerHTML = ""; // limpa player
+      window.scrollTo({ top: container.offsetTop, behavior: "smooth" });
     }
 
-    async function abrirEpisodio(url) {
-      const slug = url.split('/').pop();
-      assistirAnime(slug);
-      window.scrollTo({ top: document.getElementById("player").offsetTop, behavior: "smooth" });
+    async function verPlayer(slug, ep) {
+      const res = await fetch(`${API}/animefire/player/${slug}/${ep}`);
+      const data = await res.json();
+      const container = document.getElementById("player");
+      container.innerHTML = `
+        <h2 class="text-2xl font-bold mb-2">Assistindo Episódio ${ep}</h2>
+        <iframe src="${data.player}" class="w-full h-96 rounded" allowfullscreen></iframe>
+      `;
+      window.scrollTo({ top: container.offsetTop, behavior: "smooth" });
     }
 
     carregarPopulares();
   </script>
+
 </body>
 </html>
