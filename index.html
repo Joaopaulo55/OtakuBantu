@@ -2,93 +2,89 @@
 <html lang="pt">
 <head>
   <meta charset="UTF-8">
-  <title>OtakuBantu - Animes Educativos</title>
+  <title>OtakuBantu - Animes em Português</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-900 text-white p-6">
 
-  <h1 class="text-3xl font-bold mb-4">OtakuBantu 🎌</h1>
+  <h1 class="text-3xl font-bold mb-4 text-center">OtakuBantu 🔥</h1>
 
-  <div class="mb-6">
-    <input id="search" type="text" placeholder="Buscar anime por nome..." class="px-4 py-2 text-black rounded w-1/2" />
+  <!-- Busca -->
+  <div class="mb-6 flex justify-center gap-4">
+    <input id="searchInput" type="text" placeholder="Buscar anime..." class="text-black px-4 py-2 rounded w-1/2" />
     <button onclick="buscarAnime()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">Buscar</button>
   </div>
 
-  <div class="mb-6">
-    <label class="block mb-2">Filtrar por Gênero:</label>
-    <select id="generoSelect" class="text-black px-2 py-1 rounded" onchange="filtrarGenero()">
-      <option value="">Todos</option>
-      <option value="1">Ação</option>
-      <option value="4">Comédia</option>
-      <option value="8">Drama</option>
-      <option value="10">Fantasia</option>
-      <option value="22">Romance</option>
-      <option value="24">Sci-Fi</option>
-      <option value="37">Psicológico</option>
-    </select>
-  </div>
+  <!-- Populares -->
+  <h2 class="text-2xl font-semibold mb-4">Mais Populares</h2>
+  <div id="populares" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-12"></div>
 
-  <h2 class="text-2xl font-semibold mb-2">✨ Animes Populares</h2>
-  <div id="popular" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-12"></div>
+  <!-- Resultados da busca -->
+  <h2 class="text-2xl font-semibold mb-4">Resultados da Busca</h2>
+  <div id="resultados" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-12"></div>
 
-  <h2 class="text-2xl font-semibold mb-2">📺 Resultado da Busca</h2>
-  <div id="resultado" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-12"></div>
+  <!-- Player -->
+  <div id="player" class="mb-12"></div>
 
   <script>
-    const popularContainer = document.getElementById("popular");
-    const resultadoContainer = document.getElementById("resultado");
+    const API = 'https://otakubantubackend.onrender.com';
 
     async function carregarPopulares() {
-      const res = await fetch("https://api.jikan.moe/v4/top/anime");
+      const res = await fetch(`${API}/animefire/populares`);
       const data = await res.json();
-      mostrarAnimes(data.data, popularContainer);
+      const container = document.getElementById("populares");
+      container.innerHTML = "";
+      data.resultados.forEach(anime => {
+        container.innerHTML += criarCard(anime);
+      });
+    }
+
+    function criarCard(anime) {
+      const slug = anime.url.split('/').pop();
+      return `
+        <div class="bg-gray-800 rounded p-4">
+          <img src="${anime.thumb}" alt="${anime.title}" class="w-full h-60 object-cover rounded mb-2">
+          <h3 class="text-lg font-bold">${anime.title}</h3>
+          <button onclick="assistirAnime('${slug}')" class="mt-2 bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-sm">Assistir</button>
+        </div>
+      `;
     }
 
     async function buscarAnime() {
-      const query = document.getElementById("search").value.trim();
-      if (!query) return;
-      const res = await fetch(`https://api.jikan.moe/v4/anime?q=${encodeURIComponent(query)}&order_by=popularity`);
+      const termo = document.getElementById("searchInput").value.trim();
+      if (!termo) return;
+      const res = await fetch(`${API}/animefire/buscar/${encodeURIComponent(termo)}`);
       const data = await res.json();
-      resultadoContainer.innerHTML = "";
-      mostrarAnimes(data.data, resultadoContainer);
-    }
-
-    async function filtrarGenero() {
-      const genero = document.getElementById("generoSelect").value;
-      if (!genero) return carregarPopulares();
-      const res = await fetch(`https://api.jikan.moe/v4/anime?genres=${genero}`);
-      const data = await res.json();
-      popularContainer.innerHTML = "";
-      mostrarAnimes(data.data, popularContainer);
-    }
-
-    function mostrarAnimes(animes, container) {
+      const container = document.getElementById("resultados");
       container.innerHTML = "";
-      animes.forEach(anime => {
-        const trailer = anime.trailer?.embed_url
-          ? `<iframe src="${anime.trailer.embed_url}" class="w-full h-52 mt-2 rounded" allowfullscreen></iframe>`
-          : `<p class="mt-2 text-sm text-gray-400">Trailer indisponível.</p>`;
-
-        const episodiosLink = anime.episodes ? `https://myanimelist.net/anime/${anime.mal_id}/episode` : "#";
-        const externo = `
-          <div class="mt-2 space-x-2 text-sm">
-            <a href="https://myanimelist.net/anime/${anime.mal_id}" target="_blank" class="underline text-blue-300">MAL</a>
-            <a href="https://zoro.to/search?keyword=${anime.title}" target="_blank" class="underline text-green-300">Zoro.to</a>
-            <a href="https://aniwatch.to/search?keyword=${anime.title}" target="_blank" class="underline text-purple-300">Aniwatch.to</a>
-          </div>
-        `;
-
-        container.innerHTML += `
-          <div class="bg-gray-800 p-4 rounded shadow">
-            <img src="${anime.images.jpg.image_url}" class="w-full h-60 object-cover rounded" />
-            <h3 class="mt-2 font-bold text-lg">${anime.title}</h3>
-            <p class="text-sm mt-1">${anime.synopsis?.slice(0, 200) || "Sem sinopse disponível"}...</p>
-            <p class="text-sm mt-1">Episódios: ${anime.episodes || "?"}</p>
-            ${trailer}
-            ${externo}
-          </div>
-        `;
+      data.resultados.forEach(anime => {
+        const slug = anime.url.split('/').pop();
+        container.innerHTML += criarCard(anime);
       });
+    }
+
+    async function assistirAnime(slug) {
+      const res = await fetch(`${API}/animefire/assistir/${slug}`);
+      const data = await res.json();
+
+      document.getElementById("player").innerHTML = `
+        <h2 class="text-2xl font-bold mb-2">Player do Anime</h2>
+        <iframe src="${data.player}" class="w-full h-96 mb-4 rounded" allowfullscreen></iframe>
+        <h3 class="text-xl font-semibold mb-2">Episódios</h3>
+        <ul class="space-y-1">
+          ${data.episodios.map(ep => `
+            <li>
+              <a href="#" onclick="abrirEpisodio('${ep.epUrl}'); return false;" class="text-blue-400 underline">${ep.epTitle}</a>
+            </li>
+          `).join('')}
+        </ul>
+      `;
+    }
+
+    async function abrirEpisodio(url) {
+      const slug = url.split('/').pop();
+      assistirAnime(slug);
+      window.scrollTo({ top: document.getElementById("player").offsetTop, behavior: "smooth" });
     }
 
     carregarPopulares();
