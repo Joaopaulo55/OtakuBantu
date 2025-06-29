@@ -2,43 +2,131 @@
 <html lang="pt">
 <head>
   <meta charset="UTF-8">
-  <title>Consumet API Test</title>
+  <title>OtakuBantu - Anime Educacional</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
       background: #0d1117;
       color: #c9d1d9;
+      font-family: Arial, sans-serif;
       padding: 20px;
     }
-    .box {
+    input, button {
+      padding: 10px;
+      border-radius: 5px;
+      border: none;
+      margin-right: 10px;
+    }
+    .anime {
+      margin: 10px 0;
+      padding: 10px;
       background: #161b22;
-      padding: 20px;
       border-radius: 8px;
-      margin-top: 20px;
-      white-space: pre-wrap;
+    }
+    iframe {
+      width: 100%;
+      height: 360px;
+      border: none;
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
 
-  <h1>Teste de API do Consumet</h1>
-  <div id="output" class="box">Carregando...</div>
+  <h1>OtakuBantu</h1>
+  <div id="status">Verificando API...</div>
+
+  <br><hr><br>
+
+  <h2>🔍 Buscar anime por nome:</h2>
+  <input type="text" id="searchInput" placeholder="Digite o nome do anime">
+  <button onclick="buscarAnime()">Buscar</button>
+
+  <h2>🔥 Animes Populares:</h2>
+  <div id="popular"></div>
+
+  <h2>📺 Episódio Selecionado:</h2>
+  <div id="player"></div>
 
   <script>
-    const output = document.getElementById("output");
+    const API_BASE = "https://consumet-api-fawn.vercel.app/anime/gogoanime";
 
-    fetch("https://consumet-api-fawn.vercel.app/anime/gogoanime")
-      .then(res => {
-        if (!res.ok) throw new Error("Erro ao conectar");
-        return res.json();
-      })
+    // Verifica a API
+    fetch(API_BASE)
+      .then(res => res.json())
       .then(data => {
-        output.innerText = "JP\n\n" + JSON.stringify(data, null, 2);
+        document.getElementById("status").innerText = "JP\n\n" + JSON.stringify(data, null, 2);
+        carregarPopulares();
       })
-      .catch(err => {
-        output.innerText = "Epha não é hoje";
-        console.error(err);
+      .catch(() => {
+        document.getElementById("status").innerText = "Epha não é hoje";
       });
+
+    // Buscar anime por nome
+    function buscarAnime() {
+      const nome = document.getElementById("searchInput").value.trim();
+      if (!nome) return alert("Digite um nome");
+
+      fetch(`${API_BASE}/${encodeURIComponent(nome)}`)
+        .then(res => res.json())
+        .then(animes => {
+          const container = document.getElementById("popular");
+          container.innerHTML = "<h3>Resultados da busca:</h3>";
+          animes.results.forEach(anime => {
+            const div = document.createElement("div");
+            div.className = "anime";
+            div.innerHTML = `
+              <strong>${anime.title}</strong><br>
+              <img src="${anime.image}" width="120"><br>
+              <button onclick="assistirAnime('${anime.episodes[0]?.id}')">Assistir 1º Episódio</button>
+            `;
+            container.appendChild(div);
+          });
+        })
+        .catch(err => {
+          alert("Erro ao buscar anime");
+          console.error(err);
+        });
+    }
+
+    // Carregar populares
+    function carregarPopulares() {
+      fetch(`${API_BASE}/popular`)
+        .then(res => res.json())
+        .then(animes => {
+          const container = document.getElementById("popular");
+          container.innerHTML = "<h3>Mais populares:</h3>";
+          animes.results.forEach(anime => {
+            const div = document.createElement("div");
+            div.className = "anime";
+            div.innerHTML = `
+              <strong>${anime.title}</strong><br>
+              <img src="${anime.image}" width="120"><br>
+              <button onclick="assistirAnime('${anime.episodes[0]?.id}')">Assistir 1º Episódio</button>
+            `;
+            container.appendChild(div);
+          });
+        })
+        .catch(console.error);
+    }
+
+    // Assistir episódio
+    function assistirAnime(episodeId) {
+      if (!episodeId) return alert("Episódio não disponível");
+      fetch(`${API_BASE}/watch/${episodeId}`)
+        .then(res => res.json())
+        .then(data => {
+          const videoUrl = data.sources.find(src => src.quality === "default" || src.quality === "720p")?.url || data.sources[0]?.url;
+          if (!videoUrl) {
+            document.getElementById("player").innerText = "Vídeo não disponível.";
+            return;
+          }
+          document.getElementById("player").innerHTML = `<iframe src="${videoUrl}" allowfullscreen></iframe>`;
+        })
+        .catch(err => {
+          document.getElementById("player").innerText = "Erro ao carregar episódio.";
+          console.error(err);
+        });
+    }
   </script>
 
 </body>
