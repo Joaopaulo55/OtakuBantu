@@ -1,118 +1,73 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <title>OtakuBantu - Animes em Português</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Anime OTA</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-  <style>
-    .debug-info {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      background: rgba(0,0,0,0.7);
-      color: white;
-      padding: 10px;
-      font-family: monospace;
-      max-height: 200px;
-      overflow-y: auto;
-      width: 100%;
-      z-index: 1000;
-    }
-  </style>
 </head>
-<body class="bg-gray-900 text-white p-4">
-  <div id="app">
-    <!-- Debug Info -->
-    <div class="debug-info" v-if="debugMode">
-      <h3 class="font-bold">Debug Info</h3>
-      <p>API Base: {{ API_BASE }}</p>
-      <p>Última requisição: {{ lastRequest || 'Nenhuma' }}</p>
-      <p>Resposta: {{ JSON.stringify(lastResponse, null, 2) }}</p>
-      <p>Erro: {{ lastError || 'Nenhum' }}</p>
-      <button @click="toggleDebug" class="mt-2 bg-red-500 px-2 py-1 rounded text-xs">
-        Desativar Debug
-      </button>
+<body class="bg-gray-900 text-white">
+  <div id="app" class="p-6">
+    <h1 class="text-3xl font-bold mb-4">Animes em Destaque</h1>
+
+    <div v-if="isLoading" class="text-yellow-400 mb-4">Carregando...</div>
+    <div v-if="errorMessage" class="text-red-500 mb-4">{{ errorMessage }}</div>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+      <div v-for="anime in spotlightAnimes" :key="anime.id" class="bg-gray-800 rounded shadow p-2">
+        <img :src="anime.img" :alt="anime.name" class="w-full h-48 object-cover rounded" />
+        <h2 class="text-sm font-semibold mt-2">{{ anime.name }}</h2>
+        <p class="text-xs">{{ anime.duration }} | {{ anime.quality }}</p>
+      </div>
     </div>
 
-    <!-- Conteúdo Principal -->
-    <header class="mb-6 flex justify-between items-center">
-      <h1 class="text-2xl font-bold">OtakuBantu</h1>
-      <div class="flex gap-2">
-        <button @click="toggleDebug" class="bg-gray-700 px-2 py-1 rounded text-xs">
-          Debug
-        </button>
-        <input v-model="searchQuery" @keyup.enter="searchAnime" 
-               placeholder="Buscar anime..." class="text-black px-3 py-1 rounded w-64">
-        <button @click="searchAnime" class="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded">
-          Buscar
-        </button>
-      </div>
-    </header>
-
-    <main>
-      <!-- Mensagem de Carregamento -->
-      <div v-if="isLoading" class="text-center py-8">
-        <p>Carregando...</p>
-      </div>
-
-      <!-- Mensagem de Erro -->
-      <div v-if="errorMessage" class="bg-red-900 p-4 rounded mb-4">
-        {{ errorMessage }}
-      </div>
-
-      <!-- Seção Populares -->
-      <section v-if="popularAnimes.length" class="mb-8">
-        <h2 class="text-xl font-semibold mb-3">Animes Populares</h2>
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-          <div v-for="anime in popularAnimes" :key="anime.id" 
-               @click="showAnimeDetails(anime)" class="cursor-pointer group">
-            <div class="relative">
-              <img :src="anime.image || 'https://via.placeholder.com/300x400/333/ccc?text=Sem+Imagem'" 
-                   :alt="anime.title" 
-                   class="w-full h-48 object-cover rounded group-hover:opacity-80 transition">
-              <div v-if="!anime.image" class="absolute inset-0 flex items-center justify-center bg-gray-800 rounded">
-                <span class="text-xs text-gray-400">Imagem não disponível</span>
-              </div>
-            </div>
-            <h3 class="mt-2 text-sm font-medium truncate">{{ anime.title }}</h3>
-          </div>
-        </div>
-      </section>
-
-      <!-- Seção Recentes -->
-      <section v-if="recentEpisodes.length" class="mb-8">
-        <h2 class="text-xl font-semibold mb-3">Episódios Recentes</h2>
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-          <div v-for="ep in recentEpisodes" :key="ep.id" 
-               @click="playEpisode(ep)" class="cursor-pointer group">
-            <div class="relative">
-              <img :src="ep.image || 'https://via.placeholder.com/300x400/333/ccc?text=Sem+Imagem'" 
-                   :alt="ep.title" 
-                   class="w-full h-48 object-cover rounded group-hover:opacity-80 transition">
-              <div class="absolute bottom-2 left-2 bg-black bg-opacity-70 px-1 rounded text-xs">
-                Ep {{ ep.episodeNumber }}
-              </div>
-            </div>
-            <div class="mt-2">
-              <h3 class="text-sm font-medium truncate">{{ ep.title }}</h3>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Modal de Detalhes -->
-      <div v-if="showModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
-        <!-- ... (mesmo conteúdo do modal anterior) ... -->
-      </div>
-
-      <!-- Player de Vídeo -->
-      <div v-if="showPlayer" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
-        <!-- ... (mesmo conteúdo do player anterior) ... -->
-      </div>
-    </main>
+    <div class="mt-8 text-sm text-gray-400">
+      <p><strong>Debug Info</strong></p>
+      <p>API Base: {{ API_BASE }}</p>
+      <p>Última requisição: {{ lastRequest }}</p>
+      <p>Resposta: {{ lastResponse }}</p>
+      <p>Erro: {{ lastError }}</p>
+    </div>
   </div>
 
-  <script src="script.js"></script>
+  <script>
+    const { createApp } = Vue;
+    createApp({
+      data() {
+        return {
+          API_BASE: "https://ota-indol.vercel.app",
+          spotlightAnimes: [],
+          isLoading: false,
+          errorMessage: "",
+          lastRequest: null,
+          lastResponse: null,
+          lastError: null
+        };
+      },
+      async mounted() {
+        await this.fetchSpotlight();
+      },
+      methods: {
+        async fetchSpotlight() {
+          this.lastRequest = "Buscando animes em destaque...";
+          this.isLoading = true;
+          try {
+            const res = await fetch(`${this.API_BASE}/aniwatch/`);
+            if (!res.ok) throw new Error(`Erro ${res.status}`);
+            const json = await res.json();
+            this.spotlightAnimes = json.spotLightAnimes || [];
+            this.lastResponse = `OK (${res.status}) - ${this.spotlightAnimes.length} animes carregados.`;
+          } catch (err) {
+            this.errorMessage = "Erro ao carregar os animes.";
+            this.lastError = err.message;
+            console.error(err);
+          } finally {
+            this.isLoading = false;
+          }
+        }
+      }
+    }).mount("#app");
+  </script>
 </body>
 </html>
