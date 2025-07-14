@@ -1,73 +1,13 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Anime OTA</title>
-  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8">
+  <title>Animes em Destaque</title>
 </head>
-<body class="bg-gray-900 text-white">
-  <div id="app" class="p-6">
-    <h1 class="text-3xl font-bold mb-4">Animes em Destaque</h1>
+<body>
+  <h1>Animes em Destaque</h1>
+  <div id="anime-container">Carregando...</div>
 
-    <div v-if="isLoading" class="text-yellow-400 mb-4">Carregando...</div>
-    <div v-if="errorMessage" class="text-red-500 mb-4">{{ errorMessage }}</div>
-
-    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-      <div v-for="anime in spotlightAnimes" :key="anime.id" class="bg-gray-800 rounded shadow p-2">
-        <img :src="anime.img" :alt="anime.name" class="w-full h-48 object-cover rounded" />
-        <h2 class="text-sm font-semibold mt-2">{{ anime.name }}</h2>
-        <p class="text-xs">{{ anime.duration }} | {{ anime.quality }}</p>
-      </div>
-    </div>
-
-    <div class="mt-8 text-sm text-gray-400">
-      <p><strong>Debug Info</strong></p>
-      <p>API Base: {{ API_BASE }}</p>
-      <p>Última requisição: {{ lastRequest }}</p>
-      <p>Resposta: {{ lastResponse }}</p>
-      <p>Erro: {{ lastError }}</p>
-    </div>
-  </div>
-
-  <script>
-    const { createApp } = Vue;
-    createApp({
-      data() {
-        return {
-          API_BASE: "https://ota-indol.vercel.app",
-          spotlightAnimes: [],
-          isLoading: false,
-          errorMessage: "",
-          lastRequest: null,
-          lastResponse: null,
-          lastError: null
-        };
-      },
-      async mounted() {
-        await this.fetchSpotlight();
-      },
-      methods: {
-        async fetchSpotlight() {
-          this.lastRequest = "Buscando animes em destaque...";
-          this.isLoading = true;
-          try {
-            const res = await fetch(`${this.API_BASE}/aniwatch/`);
-            if (!res.ok) throw new Error(`Erro ${res.status}`);
-            const json = await res.json();
-            this.spotlightAnimes = json.spotLightAnimes || [];
-            this.lastResponse = `OK (${res.status}) - ${this.spotlightAnimes.length} animes carregados.`;
-          } catch (err) {
-            this.errorMessage = "Erro ao carregar os animes.";
-            this.lastError = err.message;
-            console.error(err);
-          } finally {
-            this.isLoading = false;
-          }
-        }
-      }
-    }).mount("#app");
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>
