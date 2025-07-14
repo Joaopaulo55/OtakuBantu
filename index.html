@@ -4,97 +4,126 @@
   <meta charset="UTF-8">
   <title>OtakuBantu - Animes em Português</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 </head>
-<body class="bg-gray-900 text-white p-6">
+<body class="bg-gray-900 text-white p-4">
+  <div id="app">
+    <!-- Cabeçalho -->
+    <header class="mb-6 flex justify-between items-center">
+      <h1 class="text-2xl font-bold">OtakuBantu</h1>
+      <div class="flex gap-2">
+        <input v-model="searchQuery" @keyup.enter="searchAnime" 
+               placeholder="Buscar anime..." class="text-black px-3 py-1 rounded w-64">
+        <button @click="searchAnime" class="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded">
+          Buscar
+        </button>
+      </div>
+    </header>
 
-  <h1 class="text-3xl font-bold mb-4 text-center">🔥 OtakuBantu</h1>
+    <!-- Conteúdo Principal -->
+    <main>
+      <!-- Seção Populares -->
+      <section v-if="popularAnimes.length" class="mb-8">
+        <h2 class="text-xl font-semibold mb-3">Animes Populares</h2>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          <div v-for="anime in popularAnimes" :key="anime.id" 
+               @click="showAnimeDetails(anime)" class="cursor-pointer">
+            <img :src="anime.poster" :alt="anime.name" class="w-full h-48 object-cover rounded">
+            <h3 class="mt-2 text-sm font-medium truncate">{{ anime.name }}</h3>
+          </div>
+        </div>
+      </section>
 
-  <!-- Campo de busca -->
-  <div class="mb-6 flex justify-center gap-4">
-    <input id="searchInput" type="text" placeholder="Buscar anime..." class="text-black px-4 py-2 rounded w-1/2" />
-    <button onclick="buscarAnime()" class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">Buscar</button>
+      <!-- Seção Recentes -->
+      <section v-if="recentEpisodes.length" class="mb-8">
+        <h2 class="text-xl font-semibold mb-3">Episódios Recentes</h2>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          <div v-for="ep in recentEpisodes" :key="ep.id" 
+               @click="playEpisode(ep)" class="cursor-pointer">
+            <img :src="ep.image" :alt="ep.title" class="w-full h-48 object-cover rounded">
+            <div class="mt-2">
+              <h3 class="text-sm font-medium truncate">{{ ep.title }}</h3>
+              <p class="text-xs text-gray-400">Episódio {{ ep.episodeNumber }}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Modal de Detalhes -->
+      <div v-if="showModal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
+        <div class="bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div class="p-4">
+            <div class="flex justify-between items-start mb-4">
+              <h2 class="text-xl font-bold">{{ selectedAnime.name }}</h2>
+              <button @click="closeModal" class="text-gray-400 hover:text-white">
+                ✕
+              </button>
+            </div>
+            
+            <div class="flex flex-col md:flex-row gap-4">
+              <img :src="selectedAnime.poster" :alt="selectedAnime.name" class="w-full md:w-1/3 h-auto object-cover rounded">
+              
+              <div class="flex-1">
+                <div class="grid grid-cols-2 gap-2 mb-4">
+                  <p><span class="text-gray-400">Tipo:</span> {{ selectedAnime.type || 'TV' }}</p>
+                  <p><span class="text-gray-400">Status:</span> {{ selectedAnime.status || 'Em andamento' }}</p>
+                  <p><span class="text-gray-400">Episódios:</span> {{ selectedAnime.episodes?.length || selectedAnime.totalEpisodes || 'N/A' }}</p>
+                  <p><span class="text-gray-400">Gêneros:</span> {{ selectedAnime.genres?.join(', ') || 'N/A' }}</p>
+                </div>
+                
+                <p class="text-gray-300 mb-4">{{ selectedAnime.description || 'Descrição não disponível.' }}</p>
+                
+                <div v-if="selectedAnime.episodes" class="mt-4">
+                  <h3 class="font-semibold mb-2">Episódios</h3>
+                  <div class="grid grid-cols-4 gap-2">
+                    <button v-for="ep in selectedAnime.episodes" :key="ep.id"
+                            @click="playEpisode(ep)"
+                            class="bg-purple-600 hover:bg-purple-700 px-2 py-1 rounded text-xs">
+                      Ep {{ ep.episodeNumber }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Player de Vídeo -->
+      <div v-if="showPlayer" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
+        <div class="bg-gray-800 rounded-lg w-full max-w-4xl">
+          <div class="p-4">
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-xl font-bold">{{ currentEpisode.title }}</h2>
+              <button @click="closePlayer" class="text-gray-400 hover:text-white">
+                ✕
+              </button>
+            </div>
+            
+            <div class="aspect-w-16 aspect-h-9 mb-4">
+              <iframe v-if="videoUrl" :src="videoUrl" 
+                      class="w-full h-96" allowfullscreen></iframe>
+              <div v-else class="flex items-center justify-center h-96 bg-gray-700">
+                <p>Carregando player...</p>
+              </div>
+            </div>
+            
+            <div class="flex justify-between">
+              <button v-if="prevEpisode" @click="playEpisode(prevEpisode)"
+                      class="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded">
+                Anterior
+              </button>
+              <button v-if="nextEpisode" @click="playEpisode(nextEpisode)"
+                      class="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded ml-auto">
+                Próximo
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
   </div>
 
-  <!-- Lista de populares -->
-  <h2 class="text-2xl font-semibold mb-4">Populares</h2>
-  <div id="populares" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10"></div>
-
-  <!-- Resultados de busca -->
-  <h2 class="text-2xl font-semibold mb-4">Resultados da Busca</h2>
-  <div id="resultados" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10"></div>
-
-  <!-- Episódios -->
-  <div id="episodios" class="mb-10"></div>
-
-  <!-- Player -->
-  <div id="player" class="mb-12"></div>
-
-  <script>
-    const API = "https://otakubantubackend.onrender.com";
-
-    async function carregarPopulares() {
-      const res = await fetch(`${API}/animefire/populares`);
-      const data = await res.json();
-      const container = document.getElementById("populares");
-      container.innerHTML = "";
-      data.resultados.forEach(anime => {
-        container.innerHTML += criarCard(anime);
-      });
-    }
-
-    function criarCard(anime) {
-      const slug = anime.url.split('/').pop().replace("-todos-os-episodios", "");
-      return `
-        <div class="bg-gray-800 rounded p-4">
-          <img src="${anime.thumb}" alt="${anime.title}" class="w-full h-60 object-cover rounded mb-2">
-          <h3 class="text-lg font-bold">${anime.title}</h3>
-          <button onclick="verEpisodios('${slug}')" class="mt-2 bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-sm">Ver episódios</button>
-        </div>
-      `;
-    }
-
-    async function buscarAnime() {
-      const termo = document.getElementById("searchInput").value.trim();
-      if (!termo) return;
-      const res = await fetch(`${API}/animefire/buscar/${encodeURIComponent(termo)}`);
-      const data = await res.json();
-      const container = document.getElementById("resultados");
-      container.innerHTML = "";
-      data.resultados.forEach(anime => {
-        const slug = anime.url.split('/').pop().replace("-todos-os-episodios", "");
-        container.innerHTML += criarCard(anime);
-      });
-    }
-
-    async function verEpisodios(slug) {
-      const res = await fetch(`${API}/animefire/assistir/${slug}`);
-      const data = await res.json();
-      const container = document.getElementById("episodios");
-      container.innerHTML = `<h2 class="text-2xl font-bold mb-2">Episódios</h2>`;
-      data.episodios.forEach(ep => {
-        container.innerHTML += `
-          <button onclick="verPlayer('${slug}', '${ep.epNum}')" class="bg-purple-600 hover:bg-purple-700 px-3 py-1 rounded text-sm m-1">
-            ${ep.epTitle}
-          </button>
-        `;
-      });
-      document.getElementById("player").innerHTML = ""; // limpa player
-      window.scrollTo({ top: container.offsetTop, behavior: "smooth" });
-    }
-
-    async function verPlayer(slug, ep) {
-      const res = await fetch(`${API}/animefire/player/${slug}/${ep}`);
-      const data = await res.json();
-      const container = document.getElementById("player");
-      container.innerHTML = `
-        <h2 class="text-2xl font-bold mb-2">Assistindo Episódio ${ep}</h2>
-        <iframe src="${data.player}" class="w-full h-96 rounded" allowfullscreen></iframe>
-      `;
-      window.scrollTo({ top: container.offsetTop, behavior: "smooth" });
-    }
-
-    carregarPopulares();
-  </script>
-
+  <script src="script.js"></script>
 </body>
 </html>
