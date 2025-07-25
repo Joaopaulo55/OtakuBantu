@@ -1,13 +1,236 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-BR" data-theme="dark">
 <head>
-  <meta charset="UTF-8">
-  <title>Animes em Destaque</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="OtakuBantu - Seu portal completo de animes em 2025">
+    <title>OtakuBantu | Portal Anime 2025</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="animations.css">
+    <link rel="icon" href="assets/favicon.ico">
+    <link rel="manifest" href="manifest.json">
 </head>
 <body>
-  <h1>Animes em Destaque</h1>
-  <div id="anime-container">Carregando...</div>
+    <!-- Cursor Personalizado -->
+    <div class="custom-cursor"></div>
+    
+    <!-- Preloader -->
+    <div class="preloader">
+        <div class="loader-anime">
+            <div class="loader-icon"></div>
+            <span>Carregando universo otaku...</span>
+        </div>
+    </div>
 
-  <script src="script.js"></script>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="#" class="logo" aria-label="OtakuBantu">
+                <img src="assets/logo.svg" alt="OtakuBantu Logo">
+                <span>OtakuBantu</span>
+            </a>
+            
+            <div class="nav-links">
+                <a href="#popular" class="nav-link" data-link>Populares</a>
+                <a href="#recommended" class="nav-link" data-link>Recomendados</a>
+                <a href="#news" class="nav-link" data-link>Notícias</a>
+                <a href="#upcoming" class="nav-link" data-link>Lançamentos</a>
+            </div>
+            
+            <div class="nav-actions">
+                <button id="theme-toggle" class="icon-btn" aria-label="Alternar tema">
+                    <i class="icon-sun-moon"></i>
+                </button>
+                <button id="search-toggle" class="icon-btn" aria-label="Buscar">
+                    <i class="icon-search"></i>
+                </button>
+                <button class="hamburger" id="mobile-menu-toggle" aria-label="Menu mobile">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Search Bar -->
+        <div class="search-bar" id="search-bar">
+            <input type="text" placeholder="Buscar animes..." id="search-input">
+            <button class="search-btn">
+                <i class="icon-search"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">Explore o Universo Otaku em 2025</h1>
+            <p class="hero-subtitle">Descubra, assista e mergulhe no mundo dos animes com recomendações inteligentes</p>
+            <div class="hero-cta">
+                <a href="#popular" class="btn-primary" data-link>Explorar</a>
+                <a href="#recommended" class="btn-secondary">Recomendações</a>
+            </div>
+        </div>
+        <div class="hero-scroll">
+            <span>Scroll</span>
+            <div class="scroll-icon"></div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Popular Section -->
+        <section id="popular" class="section">
+            <div class="section-header">
+                <h2>Animes Populares</h2>
+                <div class="section-controls">
+                    <button class="slider-prev" aria-label="Anterior">
+                        <i class="icon-arrow-left"></i>
+                    </button>
+                    <button class="slider-next" aria-label="Próximo">
+                        <i class="icon-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="anime-grid" id="popular-anime">
+                <!-- Populated by JS -->
+                <div class="skeleton-card"></div>
+                <div class="skeleton-card"></div>
+                <div class="skeleton-card"></div>
+                <div class="skeleton-card"></div>
+            </div>
+        </section>
+
+        <!-- Recommended Section -->
+        <section id="recommended" class="section">
+            <div class="section-header">
+                <h2 id="recommended-title">Recomendados do Dia</h2>
+                <div class="genre-tags">
+                    <button class="genre-tag active" data-genre="action">Action</button>
+                    <button class="genre-tag" data-genre="isekai">Isekai</button>
+                    <button class="genre-tag" data-genre="comedy">Comedy</button>
+                    <button class="genre-tag" data-genre="fantasy">Fantasy</button>
+                </div>
+            </div>
+            <div class="anime-list" id="recommended-anime">
+                <!-- Populated by JS -->
+                <div class="skeleton-item"></div>
+                <div class="skeleton-item"></div>
+                <div class="skeleton-item"></div>
+            </div>
+        </section>
+
+        <!-- News Section -->
+        <section id="news" class="section">
+            <div class="section-header">
+                <h2>Notícias do Mundo Otaku</h2>
+                <a href="#" class="see-all">Ver todas</a>
+            </div>
+            <div class="news-grid" id="anime-news">
+                <!-- Populated by JS -->
+                <div class="skeleton-news"></div>
+                <div class="skeleton-news"></div>
+                <div class="skeleton-news"></div>
+            </div>
+        </section>
+
+        <!-- Upcoming Section -->
+        <section id="upcoming" class="section">
+            <div class="section-header">
+                <h2>Próximos Lançamentos</h2>
+                <div class="calendar-view">
+                    <button class="calendar-btn active">Lista</button>
+                    <button class="calendar-btn">Calendário</button>
+                </div>
+            </div>
+            <div class="upcoming-list" id="upcoming-anime">
+                <!-- Populated by JS -->
+                <div class="skeleton-upcoming"></div>
+                <div class="skeleton-upcoming"></div>
+                <div class="skeleton-upcoming"></div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-brand">
+                <img src="assets/logo.svg" alt="OtakuBantu" class="footer-logo">
+                <p>O portal definitivo para fãs de anime em 2025</p>
+                <div class="social-links">
+                    <a href="#" aria-label="Twitter"><i class="icon-twitter"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="icon-instagram"></i></a>
+                    <a href="#" aria-label="Discord"><i class="icon-discord"></i></a>
+                </div>
+            </div>
+            
+            <div class="footer-links">
+                <div class="link-group">
+                    <h3>Explorar</h3>
+                    <a href="#popular">Populares</a>
+                    <a href="#recommended">Recomendados</a>
+                    <a href="#news">Notícias</a>
+                    <a href="#upcoming">Lançamentos</a>
+                </div>
+                
+                <div class="link-group">
+                    <h3>Recursos</h3>
+                    <a href="#">API</a>
+                    <a href="#">Desenvolvedores</a>
+                    <a href="#">Status</a>
+                </div>
+                
+                <div class="link-group">
+                    <h3>Legal</h3>
+                    <a href="#">Termos</a>
+                    <a href="#">Privacidade</a>
+                    <a href="#">Cookies</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <p>&copy; 2025 OtakuBantu. Todos os direitos reservados.</p>
+            <div class="footer-lang">
+                <select id="language-selector">
+                    <option value="pt">Português</option>
+                    <option value="en">English</option>
+                    <option value="es">Español</option>
+                    <option value="ja">日本語</option>
+                </select>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Anime Modal -->
+    <div class="modal" id="anime-modal">
+        <div class="modal-content">
+            <button class="modal-close" aria-label="Fechar modal">
+                <i class="icon-close"></i>
+            </button>
+            <div class="modal-body">
+                <div class="modal-poster">
+                    <img id="modal-image" src="" alt="Anime Poster">
+                </div>
+                <div class="modal-info">
+                    <h2 id="modal-title"></h2>
+                    <div class="meta-info">
+                        <span id="modal-type"></span>
+                        <span id="modal-episodes"></span>
+                        <span id="modal-status"></span>
+                    </div>
+                    <p id="modal-synopsis"></p>
+                    <div class="modal-actions">
+                        <button class="btn-primary">Assistir</button>
+                        <button class="btn-secondary">+ Minha Lista</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/utils.js"></script>
+    <script src="js/app.js"></script>
 </body>
 </html>
