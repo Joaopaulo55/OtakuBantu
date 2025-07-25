@@ -1,3 +1,6 @@
+// Configuração da API
+const API_BASE_URL = 'https://otakubantubackend.onrender.com';
+
 // DOM Elements
 const themeToggle = document.getElementById('theme-toggle');
 const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
@@ -146,7 +149,7 @@ function animateOnScroll() {
 // API Functions
 async function loadPopularAnime() {
     try {
-        const response = await fetch('/api/populares');
+        const response = await fetch(`${API_BASE_URL}/api/populares`);
         const data = await response.json();
         
         const popularContainer = document.getElementById('popular-anime');
@@ -179,7 +182,7 @@ async function loadPopularAnime() {
 
 async function loadRecommendedAnime() {
     try {
-        const response = await fetch('/api/recomendados');
+        const response = await fetch(`${API_BASE_URL}/api/recomendados`);
         const data = await response.json();
         
         const recommendedContainer = document.getElementById('recommended-anime');
@@ -214,7 +217,7 @@ async function loadRecommendedAnime() {
 
 async function loadAnimeNews() {
     try {
-        const response = await fetch('/api/noticias');
+        const response = await fetch(`${API_BASE_URL}/api/noticias`);
         const data = await response.json();
         
         const newsContainer = document.getElementById('anime-news');
@@ -241,7 +244,7 @@ async function loadAnimeNews() {
 
 async function loadUpcomingAnime() {
     try {
-        const response = await fetch('/api/lancamentos');
+        const response = await fetch(`${API_BASE_URL}/api/lancamentos`);
         const data = await response.json();
         
         const upcomingContainer = document.getElementById('upcoming-anime');
@@ -303,7 +306,7 @@ genreTags.forEach(tag => {
         
         const genre = tag.dataset.genre;
         try {
-            const response = await fetch(`/api/recomendados?genero=${genre}`);
+            const response = await fetch(`${API_BASE_URL}/api/recomendados?genero=${genre}`);
             const data = await response.json();
             
             const recommendedContainer = document.getElementById('recommended-anime');
