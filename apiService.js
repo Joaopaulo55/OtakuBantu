@@ -1,47 +1,55 @@
-// apiService.js
+// Utility functions
 
-const API_BASE = 'https://consumet-api-fawn.vercel.app/anime/gogoanime'; // Altere se estiver em localhost ou domínio próprio
+// Debounce function to limit how often a function is called
+function debounce(func, wait = 100, immediate = false) {
+    let timeout;
+    return function() {
+        const context = this, args = arguments;
+        const later = function() {
+            timeout = null;
+            if (!immediate) func.apply(context, args);
+        };
+        const callNow = immediate && !timeout;
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+        if (callNow) func.apply(context, args);
+    };
+}
 
-const apiService = {
-  // Buscar animes por nome (com suporte à paginação)
-  searchAnimes: (query, page = 1) =>
-    fetch(`${API_BASE}/search?q=${encodeURIComponent(query)}&page=${page}`)
-      .then(res => res.json()),
+// Format date to readable string
+function formatDate(dateString) {
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    return new Date(dateString).toLocaleDateString('pt-BR', options);
+}
 
-  // Buscar animes populares
-  getPopularAnimes: () =>
-    fetch(`${API_BASE}/popular`)
-      .then(res => res.json()),
+// Truncate text with ellipsis
+function truncateText(text, maxLength = 100) {
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + '...';
+}
 
-  // Buscar últimos episódios lançados
-  getRecentEpisodes: () =>
-    fetch(`${API_BASE}/recent`)
-      .then(res => res.json()),
+// Check if element is in viewport
+function isInViewport(element) {
+    const rect = element.getBoundingClientRect();
+    return (
+        rect.top >= 0 &&
+        rect.left >= 0 &&
+        rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+        rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+    );
+}
 
-  // Buscar detalhes completos de um anime
-  getAnimeDetails: (id) =>
-    fetch(`${API_BASE}/anime/${id}`)
-      .then(res => res.json()),
+// Add event listener with debounce
+function onDebouncedEvent(element, event, callback, delay = 100) {
+    const debouncedCallback = debounce(callback, delay);
+    element.addEventListener(event, debouncedCallback);
+}
 
-  // Buscar fontes de vídeo de um episódio
-  getEpisodeVideo: (episodeId) =>
-    fetch(`${API_BASE}/watch/${episodeId}`)
-      .then(res => res.json()),
-
-  // Buscar animes por gênero (filtro local)
-  getAnimesByGenre: (genre, page = 1) =>
-    fetch(`${API_BASE}/genre/${genre}?page=${page}`)
-      .then(res => res.json()),
-
-  // Assinar newsletter (caso adicione essa rota futuramente no backend)
-  subscribeNewsletter: (email) =>
-    fetch(`${API_BASE}/newsletter`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email })
-    }).then(res => res.json())
+// Export utility functions
+export {
+    debounce,
+    formatDate,
+    truncateText,
+    isInViewport,
+    onDebouncedEvent
 };
-
-export default apiService; // se usar módulos ES
-
-
